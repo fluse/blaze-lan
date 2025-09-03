@@ -173,8 +173,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.querySelectorAll('.start-menu-item').forEach(item => {
             item.addEventListener('click', (e) => {
-                e.preventDefault();
-                toggleProgram(e.target.dataset.windowId);
+                // Nur die Standard-Aktion verhindern, wenn es ein Fenster-Button ist
+                if (item.dataset.windowId) {
+                    e.preventDefault();
+                    toggleProgram(item.dataset.windowId);
+                }
+                // Das Startmenü wird bei jedem Klick geschlossen
                 startMenu.style.display = 'none';
             });
         });
