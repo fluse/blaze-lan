@@ -11,7 +11,26 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="desktop">
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="login-header">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHySURBVFhH7ZfRbtNAEIbpD/gC8QWSm0BwA8AJiBPECyQ3gHBCiA/gC4gnlFzgdAdxgtQFXO4AEozvJFZ6aM+pY0v2JEgijWb2vPn2zHh2C+D/K4BvW0hVIJpEkiSNflmcn3zVd5kU0TIsQ/axfDE3c/fH4+cn2V2LAiB1sTwjT55kkiQt2hT2c//C92nI+17a5olxSgD0h0FGIAKgdLGEV3j+VP2hA3A2wD8yu8lWzEAtrgQoA4gLgAJAgDk0F6v1+u42i4AYLzYzgCg1v+AWgB4vwCgLgBGDBs2sAYwZkCYkH+mATuPAQDFgBHA2AKOAYwBHA4A1f8A0gGAmQBMbABMZyAASYAlAExoAExnICGAkQDQWweAM98AQv0nAHoA8F+w1gCgfgAAnIDoAWB+AFB/ADgC0QPA/ACA+gHAGYgeAOZHgPoDwBGIHgDmR4D6A8ARiB4A5keA+gPAEYgeAObfP0E5D57eAFA/AAgnkLwA6AFA/QBwBKMHwPybgPoDwBmMHgDm3wTUFwDOYPQAMH8TUF8AOMPoAWD+TVB9AODsDA9g/k3QfwDg7AwPYP5N0H8A4OwMD2D+TdD/AADZ3AEw/ybovwGAk/0DADz/Juh/A+DsDA9g/k3QfwDg7AwPYP5N0H8A4OwMD2D+TdD/AADZ3AFg/k3QfwMAJ/sHAPz+TVD/A8CRx/sA80+C+ncARx7vA8w/CepfARx5vA8w/ySo/z3AkceX2e8/wTz/BFRqf3r7AfDfFvAGx/k3gZJ/pvwHAG9g/M0A+b8BfTMA+R/ADQz/mQD5P0GbAPk/QZsGwP8c+L8B/zD4bwB/WPzPAP8w+G8A/1j85wD/MPjv+w/BD5Z/BH+w/BH8wfJH8AcrX52iAQ/+40+A/+z/DxkAAAAASUVORK5CYII=" alt="Key Logo" width="32" height="32">
+                <h2>Anmeldung</h2>
+            </div>
+            <div class="login-body">
+                <p>Gib deinen Namen ein, um BlazeLanOS zu starten.</p>
+                <div class="login-input-group">
+                    <label for="loginNameInput">Benutzername:</label>
+                    <input type="text" id="loginNameInput" class="win-input" autofocus>
+                </div>
+                <div class="login-buttons">
+                    <button id="loginBtn" class="win-button">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="desktop" style="display: none;">
         <div id="cursor-container"></div> <!-- Container für die Live-Cursor -->
 
         <!-- Paint Window -->
@@ -58,11 +77,11 @@
         <div class="win-window" id="window-registration" style="width: 350px; height: 450px; top: 80px; left: 80px; display: none;">
             <div class="win-title-bar"><span>Anmeldung.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
             <div class="win-content">
-                <p>Melde dich für die LAN-Party an!</p>
+                <p>Dein Name ist im System registriert.</p>
                 <div id="registration-form" style="display: flex; flex-direction: column; gap: 5px;">
                     <label for="nameInput">Dein Name:</label>
-                    <input type="text" id="nameInput" class="win-input">
-                    <button id="registerBtn" class="win-button" style="margin-top: 5px;">Anmelden</button>
+                    <input type="text" id="nameInput" class="win-input" disabled>
+                    <button id="registerBtn" class="win-button" style="margin-top: 5px;" disabled>Angemeldet</button>
                 </div>
                 <hr style="width: 100%; border: 1px inset var(--win-shadow); margin: 10px 0;">
                 <p>Teilnehmer:</p>
@@ -133,13 +152,13 @@
             <li><a href="#" class="start-menu-item" data-window-id="window-registration">Anmeldung</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-poll">Umfrage</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-paint">Paint</a></li>
-            <li><a href="#" class="start-menu-item" data-window-id="window-notepad">Notepad</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-controls">Steuerung</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-notepad">Notepad</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-calculator">Rechner</a></li>
         </ul>
     </div>
 
-    <footer id="taskbar">
+    <footer id="taskbar" style="display: none;">
         <button id="startButton" class="win-button">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACDSURBVDhPY/j//z8DNsD4wscK4ILgB4gYgDgwGYn9gAYQG4D4fyA2AGI/kPh/ALsDMX4g1gY5A3F+INYG5QDEDyAOBiA+AE3gDyCWBFkTiAOBgNghqCWQGYj9gFgH5AxE/0BsB+QOxA8GUTgA8V8g9gdiAyD+D8QGQDQAUwEAy/t48dZx6LAAAAAASUVORK5CYII=" alt="" width="16" height="16">
             <span>Start</span>

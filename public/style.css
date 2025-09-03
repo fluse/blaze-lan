@@ -24,6 +24,72 @@ body {
     user-select: none;
 }
 
+/* --- Login Screen Styles --- */
+#login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #008080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+}
+
+.login-box {
+    background: var(--win-bg);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.2);
+    width: 450px;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.login-header {
+    background: var(--win-title-bar);
+    color: var(--win-title-text);
+    padding: 5px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.login-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex-grow: 1;
+}
+
+.login-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.login-input-group label {
+    flex-basis: 100px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.login-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.login-buttons .win-button {
+    min-width: 100px;
+}
+
+
 #desktop {
     height: calc(100vh - 40px);
     position: relative;
@@ -40,7 +106,7 @@ body {
     flex-direction: column;
     position: absolute;
     min-width: 250px;
-    min-height: 180px;
+    min-height: 200px;
 }
 
 .win-title-bar {
@@ -51,6 +117,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 3px;
     cursor: move;
 }
 
@@ -87,6 +154,7 @@ body {
     padding: 8px;
     gap: 15px;
     overflow: auto;
+    background: var(--win-bg);
 }
 
 .win-resize-handle {
@@ -101,33 +169,35 @@ body {
 
 .win-menu-bar {
     background: var(--win-bg);
-    padding: 4px 6px;
+    padding: 2px 4px;
     border-bottom: 2px solid;
     border-color: var(--win-shadow) var(--win-highlight);
+    margin: 0;
     display: flex;
     gap: 10px;
     align-items: center;
-    height: 40px;
+    height: 35px;
 }
 
 .win-menu-bar .separator {
+    height: 80%;
     width: 2px;
-    height: 25px;
-    background-color: var(--win-shadow);
-    border-right: 2px solid var(--win-highlight);
+    border-left: 1px solid var(--win-shadow);
+    border-right: 1px solid var(--win-highlight);
 }
 
-.win-menu-bar input[type="color"] {
-    width: 35px;
-    height: 28px;
-    padding: 0;
-    border: 2px inset var(--win-shadow);
+.win-button-small {
+    background-color: var(--win-bg);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+    box-shadow: 1px 1px 0px 0px #000;
+    padding: 2px 6px;
     cursor: pointer;
 }
-
-.win-menu-bar input[type="range"] {
-    width: 120px;
+.win-button-small:active {
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
 }
+
 
 /* --- Taskbar Styles --- */
 #taskbar {
@@ -142,6 +212,7 @@ body {
     box-sizing: border-box;
     display: flex;
     align-items: center;
+    z-index: 18000;
 }
 
 .win-button {
@@ -159,20 +230,10 @@ body {
     border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
     background-color: #e0e0e0;
 }
-
-.win-button-small {
-    background-color: var(--win-bg);
-    border: 2px solid;
-    border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
-    box-shadow: 1px 1px 0px 0px #000;
-    padding: 2px 8px;
-    cursor: pointer;
-    font-size: 16px;
+.win-button:disabled {
+    color: var(--win-shadow);
+    text-shadow: 1px 1px var(--win-highlight);
 }
-.win-button-small:active {
-    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
-}
-
 
 #taskbar-buttons { display: flex; gap: 4px; margin-left: 8px; }
 .task-button {
@@ -186,6 +247,9 @@ body {
     margin-left: auto;
     border: 2px inset var(--win-shadow);
     padding: 2px 8px;
+    height: 100%;
+    display: flex;
+    align-items: center;
 }
 
 /* --- Start Menu Styles --- */
@@ -199,7 +263,7 @@ body {
     border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
     box-shadow: 2px 2px 0px 0px #000;
     padding: 3px;
-    z-index: 10000;
+    z-index: 19000;
 }
 #start-menu ul { list-style: none; margin: 0; padding: 0; }
 #start-menu li a {
@@ -241,9 +305,13 @@ body {
     padding: 5px;
     font-family: 'VT323', monospace;
     font-size: 18px;
+    background: var(--win-highlight);
 }
 .win-input:focus {
     outline: none;
+}
+.win-input:disabled {
+    background: var(--win-bg);
 }
 
 .win-list {
