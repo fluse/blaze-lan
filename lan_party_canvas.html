@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAN-Party Desktop '95</title>
+    <!-- Google Fonts for a retro pixel look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --win-bg: #c0c0c0;
+            --win-text: #000000;
+            --win-highlight: #ffffff;
+            --win-shadow: #808080;
+            --win-title-bar: #000080;
+            --win-title-bar-inactive: #808080;
+            --win-title-text: #ffffff;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background-color: #008080; /* Classic Win95 teal background */
+            font-size: 18px;
+            color: var(--win-text);
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+            user-select: none;
+        }
+
+        #desktop {
+            height: calc(100vh - 40px);
+            position: relative;
+        }
+        
+        /* --- Window Styles --- */
+        .win-window {
+            background-color: var(--win-bg);
+            border: 2px solid;
+            border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+            box-shadow: 2px 2px 0px 0px #000;
+            padding: 3px;
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            min-width: 250px;
+            min-height: 200px;
+        }
+
+        .win-title-bar {
+            background-color: var(--win-title-bar-inactive);
+            color: var(--win-title-text);
+            padding: 3px 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            cursor: move;
+        }
+        
+        .win-window.active .win-title-bar {
+            background-color: var(--win-title-bar);
+        }
+        
+        .win-title-buttons { display: flex; }
+
+        .win-title-button {
+            width: 22px;
+            height: 22px;
+            background-color: var(--win-bg);
+            border: 2px solid;
+            border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+            box-shadow: 1px 1px 0px 0px #000;
+            margin-left: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: default;
+        }
+        .win-title-button:active {
+            border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+        }
+
+        .win-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid;
+            border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+            padding: 8px;
+            gap: 15px;
+            overflow: auto;
+        }
+        
+        .win-resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 16px;
+            height: 16px;
+            background: repeating-linear-gradient(135deg, var(--win-shadow), var(--win-shadow) 1px, var(--win-bg) 1px, var(--win-bg) 4px);
+            cursor: se-resize;
+        }
+        
+        /* --- Taskbar Styles --- */
+        #taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: var(--win-bg);
+            border-top: 2px solid var(--win-highlight);
+            padding: 4px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            z-index: 20000;
+        }
+        
+        .win-button {
+            background-color: var(--win-bg);
+            border: 2px solid;
+            border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+            box-shadow: 1px 1px 0px 0px #000;
+            padding: 5px 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .win-button:active, .win-button.active {
+            border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+            background-color: #e0e0e0;
+        }
+        
+        #taskbar-buttons { display: flex; gap: 4px; margin-left: 8px; }
+        .task-button {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #clock {
+            margin-left: auto;
+            border: 2px inset var(--win-shadow);
+            padding: 2px 8px;
+        }
+
+        /* --- Start Menu Styles --- */
+        #start-menu {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            width: 200px;
+            background: var(--win-bg);
+            border: 2px solid;
+            border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+            box-shadow: 2px 2px 0px 0px #000;
+            padding: 3px;
+            z-index: 10000;
+        }
+        #start-menu ul { list-style: none; margin: 0; padding: 0; }
+        #start-menu li a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: var(--win-text);
+        }
+        #start-menu li a:hover {
+            background: var(--win-title-bar);
+            color: var(--win-title-text);
+        }
+        
+        /* --- Program Specific Styles --- */
+        #drawingCanvas { background-color: white; display: block; width: 100%; height: 100%; }
+        #brushCursor { position: absolute; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); border: 1px solid black; }
+        #notepad-textarea { width: 100%; height: 100%; border: none; resize: none; font-family: 'VT323', monospace; font-size: 18px; }
+        #calculator-display { width: 100%; background: white; border: 2px inset var(--win-shadow); padding: 5px; text-align: right; font-size: 24px; margin-bottom: 8px; }
+        #calculator-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .calc-btn { padding: 10px; }
+        #participant-list { list-style-type: none; padding: 0; margin: 0; background: white; border: 2px inset var(--win-shadow); flex-grow: 1; overflow-y: auto; padding: 5px; }
+    </style>
+</head>
+<body>
+    <div id="desktop">
+        <!-- Paint Window -->
+        <div class="win-window active" id="window-paint" style="width: 500px; height: 400px; top: 20px; left: 280px; z-index: 2;">
+            <div class="win-title-bar">
+                <span>Paint.exe</span>
+                <div class="win-title-buttons">
+                    <div class="win-title-button win-close-btn">X</div>
+                </div>
+            </div>
+            <div class="win-content" style="padding: 0; position:relative;">
+                <canvas id="drawingCanvas"></canvas>
+                <div id="brushCursor"></div>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+
+        <!-- Controls Window -->
+        <div class="win-window" id="window-controls" style="width: 250px; height: 320px; top: 50px; left: 20px; z-index: 1;">
+            <div class="win-title-bar"><span>Steuerung.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-content">
+                <div>
+                    <label for="colorPicker">Farbe</label>
+                    <input type="color" id="colorPicker" value="#000000" style="width:100%; height:40px;">
+                </div>
+                <div>
+                    <label for="brushSize">Pinselgröße: <span id="brushSizeValue">10</span>px</label>
+                    <input type="range" id="brushSize" min="1" max="100" value="10">
+                </div>
+                <button id="clearCanvasBtn" class="win-button" style="width:100%;">Leinwand leeren</button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div id="statusIndicator" style="width: 16px; height: 16px; border: 2px inset var(--win-shadow); background-color: red;"></div>
+                    <p id="connectionStatus">Verbinde...</p>
+                </div>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+        
+        <!-- Registration Window (hidden by default) -->
+        <div class="win-window" id="window-registration" style="width: 350px; height: 450px; top: 80px; left: 80px; display: none;">
+            <div class="win-title-bar"><span>Anmeldung.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-content">
+                <p>Melde dich für die LAN-Party an!</p>
+                <div id="registration-form">
+                    <label for="nameInput">Dein Name:</label>
+                    <input type="text" id="nameInput" style="width: 100%; border: 2px inset var(--win-shadow); padding: 5px; font-family: 'VT323', monospace; font-size: 16px;">
+                    <button id="registerBtn" class="win-button" style="width: 100%; margin-top: 5px;">Anmelden</button>
+                </div>
+                <hr style="width: 100%; border: 1px inset var(--win-shadow);">
+                <p>Teilnehmer:</p>
+                <ul id="participant-list">
+                    <!-- Participants will be added here by JS -->
+                </ul>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+
+        <!-- Notepad Window (hidden by default) -->
+        <div class="win-window" id="window-notepad" style="width: 400px; height: 300px; top: 100px; left: 150px; display: none;">
+            <div class="win-title-bar"><span>Notepad.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-content" style="padding:0;">
+                <textarea id="notepad-textarea" placeholder="Hier tippen..."></textarea>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+
+        <!-- Calculator Window (hidden by default) -->
+        <div class="win-window" id="window-calculator" style="width: 280px; height: 380px; top: 120px; left: 400px; display: none;">
+            <div class="win-title-bar"><span>Rechner.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-content">
+                <div id="calculator-display">0</div>
+                <div id="calculator-buttons">
+                    <button class="win-button calc-btn">C</button><button class="win-button calc-btn">CE</button><button class="win-button calc-btn">&larr;</button><button class="win-button calc-btn">/</button>
+                    <button class="win-button calc-btn">7</button><button class="win-button calc-btn">8</button><button class="win-button calc-btn">9</button><button class="win-button calc-btn">*</button>
+                    <button class="win-button calc-btn">4</button><button class="win-button calc-btn">5</button><button class="win-button calc-btn">6</button><button class="win-button calc-btn">-</button>
+                    <button class="win-button calc-btn">1</button><button class="win-button calc-btn">2</button><button class="win-button calc-btn">3</button><button class="win-button calc-btn">+</button>
+                    <button class="win-button calc-btn">+/-</button><button class="win-button calc-btn">0</button><button class="win-button calc-btn">.</button><button class="win-button calc-btn">=</button>
+                </div>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+
+    </div>
+
+    <div id="start-menu" style="display: none;">
+        <ul>
+            <li><a href="#" class="start-menu-item" data-window-id="window-registration">Anmeldung</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-paint">Paint</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-controls">Steuerung</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-notepad">Notepad</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-calculator">Rechner</a></li>
+        </ul>
+    </div>
+
+    <footer id="taskbar">
+        <button id="startButton" class="win-button">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACDSURBVDhPY/j//z8DNsD4wscK4ILgB4gYgDgwGYn9gAYQG4D4fyA2AGI/kPh/ALsDMX4g1gY5A3F+INYG5QDEDyAOBiA+AE3gDyCWBFkTiAOBgNghqCWQGYj9gFgH5AxE/0BsB+QOxA8GUTgA8V8g9gdiAyD+D8QGQDQAUwEAy/t48dZx6LAAAAAASUVORK5CYII=" alt="" width="16" height="16">
+            <span>Start</span>
+        </button>
+        <div id="taskbar-buttons"></div>
+        <div id="clock">12:00</div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DESKTOP & WINDOW MANAGEMENT ---
+        const desktop = document.getElementById('desktop');
+        let activeWindow = document.querySelector('.win-window.active');
+        let zIndexCounter = 2;
+
+        function focusWindow(windowEl) {
+            if (activeWindow) {
+                activeWindow.classList.remove('active');
+            }
+            document.querySelectorAll('.task-button').forEach(b => b.classList.remove('active'));
+            
+            activeWindow = windowEl;
+            activeWindow.classList.add('active');
+            activeWindow.style.zIndex = ++zIndexCounter;
+            
+            const taskButton = document.querySelector(`.task-button[data-window-id="${windowEl.id}"]`);
+            if (taskButton) {
+                taskButton.classList.add('active');
+            }
+        }
+        
+        function makeDraggable(windowEl) {
+            const titleBar = windowEl.querySelector('.win-title-bar');
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            titleBar.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.win-title-button')) return;
+                isDragging = true;
+                offsetX = e.clientX - windowEl.offsetLeft;
+                offsetY = e.clientY - windowEl.offsetTop;
+                focusWindow(windowEl);
+                desktop.style.cursor = 'move';
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                windowEl.style.left = `${e.clientX - offsetX}px`;
+                windowEl.style.top = `${e.clientY - offsetY}px`;
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                desktop.style.cursor = 'default';
+            });
+        }
+        
+        function makeResizable(windowEl) {
+            const resizeHandle = windowEl.querySelector('.win-resize-handle');
+            let isResizing = false;
+            let startX, startY, startWidth, startHeight;
+            
+            resizeHandle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = parseInt(document.defaultView.getComputedStyle(windowEl).width, 10);
+                startHeight = parseInt(document.defaultView.getComputedStyle(windowEl).height, 10);
+                focusWindow(windowEl);
+                desktop.style.cursor = 'se-resize';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const newWidth = startWidth + e.clientX - startX;
+                const newHeight = startHeight + e.clientY - startY;
+                windowEl.style.width = `${newWidth}px`;
+                windowEl.style.height = `${newHeight}px`;
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (!isResizing) return;
+                isResizing = false;
+                desktop.style.cursor = 'default';
+                if (windowEl.id === 'window-paint') {
+                    resizeCanvas();
+                }
+            });
+        }
+
+        // --- TASKBAR & START MENU ---
+        const startButton = document.getElementById('startButton');
+        const startMenu = document.getElementById('start-menu');
+        const taskbarButtons = document.getElementById('taskbar-buttons');
+
+        function toggleProgram(windowId) {
+            const windowEl = document.getElementById(windowId);
+            const taskButton = document.querySelector(`.task-button[data-window-id="${windowId}"]`);
+            if (windowEl.style.display === 'none') {
+                windowEl.style.display = 'flex';
+                focusWindow(windowEl);
+                if (!taskButton) createTaskbarButton(windowEl);
+            } else {
+                if (windowEl.classList.contains('active')) {
+                     windowEl.style.display = 'none';
+                     if(taskButton) taskButton.remove();
+                } else {
+                    focusWindow(windowEl);
+                }
+            }
+        }
+
+        function createTaskbarButton(windowEl) {
+             const button = document.createElement('button');
+             button.className = 'win-button task-button';
+             button.dataset.windowId = windowEl.id;
+             button.textContent = windowEl.querySelector('.win-title-bar span').textContent;
+             button.onclick = () => focusWindow(windowEl);
+             taskbarButtons.appendChild(button);
+             focusWindow(windowEl);
+        }
+
+        startButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            startMenu.style.display = startMenu.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        document.addEventListener('click', () => {
+            startMenu.style.display = 'none';
+        });
+        
+        document.querySelectorAll('.start-menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleProgram(e.target.dataset.windowId);
+                startMenu.style.display = 'none';
+            });
+        });
+
+        document.querySelectorAll('.win-window').forEach(windowEl => {
+            makeDraggable(windowEl);
+            makeResizable(windowEl);
+            windowEl.addEventListener('mousedown', () => focusWindow(windowEl));
+            
+            const closeBtn = windowEl.querySelector('.win-close-btn');
+            closeBtn.addEventListener('click', () => {
+                windowEl.style.display = 'none';
+                const taskButton = document.querySelector(`.task-button[data-window-id="${windowEl.id}"]`);
+                if (taskButton) taskButton.remove();
+            });
+
+            if (windowEl.style.display !== 'none') {
+                createTaskbarButton(windowEl);
+            }
+        });
+        
+        // --- CLOCK ---
+        const clock = document.getElementById('clock');
+        setInterval(() => {
+            const now = new Date();
+            clock.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        }, 1000);
+
+        // --- CANVAS LOGIC (Adapted) ---
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const brushSizeSlider = document.getElementById('brushSize');
+        const brushSizeValue = document.getElementById('brushSizeValue');
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+        const brushCursor = document.getElementById('brushCursor');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const connectionStatus = document.getElementById('connectionStatus');
+        let isDrawing = false, lastX = 0, lastY = 0, ws;
+
+        function connectWebSocket() {
+            ws = new WebSocket(`ws://lan.tante.io`);
+            ws.onopen = () => { statusIndicator.style.backgroundColor = 'lime'; connectionStatus.textContent = "Verbunden!"; };
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                if (msg.type === 'history') { ctx.clearRect(0, 0, canvas.width, canvas.height); msg.data.forEach(drawSegment); }
+                else if (msg.type === 'draw') { drawSegment(msg.data); }
+                else if (msg.type === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+                else if (msg.type === 'participantsUpdate') { updateParticipantList(msg.data); }
+                else if (msg.type === 'registrationError') { alert('Fehler: ' + msg.message); }
+            };
+            ws.onclose = () => { statusIndicator.style.backgroundColor = 'red'; connectionStatus.textContent = "Getrennt..."; setTimeout(connectWebSocket, 3000); };
+            ws.onerror = () => { ws.close(); };
+        }
+        function resizeCanvas() {
+            const parent = canvas.parentElement;
+            if(parent.clientWidth > 0 && parent.clientHeight > 0) {
+                 canvas.width = parent.clientWidth;
+                 canvas.height = parent.clientHeight;
+                 if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'getHistory' }));
+            }
+        }
+        function drawSegment(seg) {
+            ctx.beginPath();
+            ctx.strokeStyle = seg.color; ctx.lineWidth = seg.size; ctx.lineCap = 'round';
+            ctx.moveTo(seg.startX, seg.startY); ctx.lineTo(seg.endX, seg.endY); ctx.stroke();
+        }
+        function getMousePos(e, target) {
+            const rect = target.getBoundingClientRect();
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            return [clientX - rect.left, clientY - rect.top];
+        }
+        canvas.addEventListener('mousedown', (e) => { isDrawing = true; [lastX, lastY] = getMousePos(e, canvas); });
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseout', () => isDrawing = false);
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing || !ws || ws.readyState !== WebSocket.OPEN) return;
+            const [currentX, currentY] = getMousePos(e, canvas);
+            ws.send(JSON.stringify({ type: 'draw', data: { startX: lastX, startY: lastY, endX: currentX, endY: currentY, color: colorPicker.value, size: brushSizeSlider.value } }));
+            [lastX, lastY] = [currentX, currentY];
+        });
+        canvas.parentElement.addEventListener('mousemove', (e) => {
+             const [x, y] = getMousePos(e, canvas.parentElement);
+             const size = brushSizeSlider.value;
+             brushCursor.style.left = `${x}px`; brushCursor.style.top = `${y}px`;
+             brushCursor.style.width = `${size}px`; brushCursor.style.height = `${size}px`;
+             brushCursor.style.backgroundColor = colorPicker.value;
+        });
+        brushSizeSlider.oninput = (e) => { brushSizeValue.textContent = e.target.value; };
+        clearCanvasBtn.onclick = () => { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'clear' })); };
+        
+        // --- REGISTRATION LOGIC ---
+        const registerBtn = document.getElementById('registerBtn');
+        const nameInput = document.getElementById('nameInput');
+        const participantList = document.getElementById('participant-list');
+
+        registerBtn.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            if (name && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'register', data: { name: name } }));
+                nameInput.value = '';
+            }
+        });
+
+        function updateParticipantList(participants) {
+            participantList.innerHTML = '';
+            participants.forEach(name => {
+                const li = document.createElement('li');
+                li.textContent = name;
+                li.style.padding = '2px 5px';
+                participantList.appendChild(li);
+            });
+        }
+
+        // --- CALCULATOR LOGIC ---
+        const calcDisplay = document.getElementById('calculator-display');
+        let currentInput = '0'; let operator = null; let previousInput = null;
+        document.getElementById('calculator-buttons').addEventListener('click', (e) => {
+            if (!e.target.matches('.calc-btn')) return;
+            const key = e.target.textContent;
+            if (/\d/.test(key)) { if (currentInput === '0') currentInput = ''; currentInput += key; } 
+            else if (key === '.') { if (!currentInput.includes('.')) currentInput += '.'; } 
+            else if (['+', '-', '*', '/'].includes(key)) { if(previousInput) calculate(); operator = key; previousInput = currentInput; currentInput = '0'; } 
+            else if (key === '=') { calculate(); operator = null; } 
+            else if (key === 'C') { currentInput = '0'; previousInput = null; operator = null; } 
+            else if (key === 'CE') { currentInput = '0'; } 
+            else if (key === '←') { currentInput = currentInput.slice(0, -1) || '0'; } 
+            else if (key === '+/-') { currentInput = (parseFloat(currentInput) * -1).toString(); }
+            calcDisplay.textContent = currentInput;
+        });
+        function calculate() {
+            if (!operator || previousInput === null) return;
+            const prev = parseFloat(previousInput); const curr = parseFloat(currentInput); let result;
+            switch(operator) {
+                case '+': result = prev + curr; break;
+                case '-': result = prev - curr; break;
+                case '*': result = prev * curr; break;
+                case '/': result = prev / curr; break;
+            }
+            currentInput = result.toString(); previousInput = null;
+        }
+
+        // --- INITIALIZATION ---
+        resizeCanvas();
+        connectWebSocket();
+    });
+    </script>
+</body>
+</html>
+
