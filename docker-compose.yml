@@ -5,3 +5,10 @@ services:
     ports:
       - "9444:8080"
     restart: unless-stopped
+    volumes:
+      # Mountet den aktuellen Ordner (.) in das Arbeitsverzeichnis des Containers.
+      # Änderungen an deinen lokalen Dateien (z.B. server.js) sind sofort wirksam.
+      - .:/usr/src/app
+      # Verhindert, dass der lokale node_modules Ordner (falls vorhanden) den
+      # im Container installierten überschreibt.
+      - /usr/src/app/node_modules
