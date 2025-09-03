@@ -1,7 +1,7 @@
 services:
-  webseite:
+  blazelanos:
     build: .
-    container_name: lan-canvas
+    container_name: BlazeLanOS
     ports:
-      - "8080:8080"
+      - "9444:8080"
     restart: unless-stopped
