@@ -319,9 +319,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         updateParticipantList(msg.data);
                         break;
                     case 'registrationError':
-                        alert('Fehler: ' + msg.message);
-                        // A more graceful way to handle this would be to show the login screen again.
-                        location.reload(); 
+                        // If the name is already taken, we assume it's the same user reconnecting
+                        // after a disconnect. We log a warning but don't interrupt the user with
+                        // an alert or a reload.
+                        console.warn('Registrierungsfehler (wird als Wiederverbindung behandelt):', msg.message);
                         break;
                     case 'notepadUpdate':
                         const sharedNotepad = document.getElementById('notepad-textarea-shared');
