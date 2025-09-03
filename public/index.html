@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="desktop">
@@ -73,6 +73,29 @@
             <div class="win-resize-handle"></div>
         </div>
 
+        <!-- Poll Window (hidden by default) -->
+        <div class="win-window" id="window-poll" style="width: 400px; height: 420px; top: 150px; left: 200px; display: none;">
+            <div class="win-title-bar"><span>Umfrage.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-content">
+                <p><strong>Terminfindung LAN-Party</strong></p>
+                <p>Welches Wochenende passt euch am besten?</p>
+                
+                <div id="poll-options" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Poll options will be dynamically inserted here -->
+                </div>
+
+                <button id="voteBtn" class="win-button" style="margin-top: 10px; max-width: 120px;">Abstimmen</button>
+                
+                <hr style="width: 100%; border: 1px inset var(--win-shadow); margin: 15px 0;">
+                
+                <p><strong>Ergebnisse:</strong></p>
+                <div id="poll-results" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Poll results will be dynamically inserted here -->
+                </div>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+
         <!-- Notepad Window (hidden by default) -->
         <div class="win-window" id="window-notepad" style="width: 400px; height: 300px; top: 100px; left: 150px; display: none;">
             <div class="win-title-bar"><span>Notepad.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
@@ -108,9 +131,10 @@
     <div id="start-menu" style="display: none;">
         <ul>
             <li><a href="#" class="start-menu-item" data-window-id="window-registration">Anmeldung</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-poll">Umfrage</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-paint">Paint</a></li>
-            <li><a href="#" class="start-menu-item" data-window-id="window-controls">Steuerung</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-notepad">Notepad</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-controls">Steuerung</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-calculator">Rechner</a></li>
         </ul>
     </div>
@@ -123,6 +147,7 @@
         <div id="taskbar-buttons"></div>
         <div id="clock">12:00</div>
     </footer>
-    <script src="scripts.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
+

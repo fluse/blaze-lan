@@ -193,7 +193,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('mousemove', (e) => {
         if (Date.now() - lastMove > 50) { // Throttle to 20 updates per second
             if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'mouseMove', data: { x: e.clientX, y: e.clientY } }));
+                // Send relative coordinates (percentages)
+                const relativeX = e.clientX / window.innerWidth;
+                const relativeY = e.clientY / window.innerHeight;
+                ws.send(JSON.stringify({ type: 'mouseMove', data: { x: relativeX, y: relativeY } }));
             }
             lastMove = Date.now();
         }
@@ -246,8 +249,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (msg.data.id !== myId) {
                         const cursor = userCursors[msg.data.id];
                         if (cursor) {
-                            cursor.style.left = `${msg.data.x}px`;
-                            cursor.style.top = `${msg.data.y}px`;
+                            // Convert relative coordinates back to absolute pixels
+                            const absoluteX = msg.data.x * window.innerWidth;
+                            const absoluteY = msg.data.y * window.innerHeight;
+                            cursor.style.left = `${absoluteX}px`;
+                            cursor.style.top = `${absoluteY}px`;
                         }
                     }
                     break;
@@ -278,6 +284,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (sharedNotepad && document.activeElement !== sharedNotepad) {
                         sharedNotepad.value = msg.data;
                     }
+                    break;
+                case 'pollUpdate':
+                    updatePoll(msg.data);
                     break;
             }
         };
@@ -339,7 +348,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = nameInput.value.trim();
         if (name && ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: 'register', data: { name: name } }));
-            // Der Name wird nicht mehr lokal gelöscht, um eine erneute Anmeldung zu ermöglichen
         }
     });
 
@@ -351,6 +359,59 @@ document.addEventListener('DOMContentLoaded', () => {
             participantList.appendChild(li);
         });
     }
+
+    // --- POLL LOGIC ---
+    const pollOptionsContainer = document.getElementById('poll-options');
+    const pollResultsContainer = document.getElementById('poll-results');
+    const voteBtn = document.getElementById('voteBtn');
+
+    function updatePoll(pollState) {
+        pollOptionsContainer.innerHTML = '';
+        pollResultsContainer.innerHTML = '';
+
+        let totalVotes = 0;
+        Object.values(pollState.options).forEach(votes => totalVotes += votes.length);
+
+        for (const option in pollState.options) {
+            const votes = pollState.options[option];
+            
+            // Create radio button options
+            const optionDiv = document.createElement('div');
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = 'poll-option';
+            radio.value = option;
+            radio.id = `poll-${option.replace(/\s+/g, '-')}`;
+            if (votes.includes(myId)) {
+                radio.checked = true;
+            }
+            const label = document.createElement('label');
+            label.htmlFor = radio.id;
+            label.textContent = ` ${option}`;
+            optionDiv.appendChild(radio);
+            optionDiv.appendChild(label);
+            pollOptionsContainer.appendChild(optionDiv);
+
+            // Create result bars
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'poll-result-bar-container';
+            const percentage = totalVotes > 0 ? (votes.length / totalVotes) * 100 : 0;
+            resultDiv.innerHTML = `
+                <div class="poll-result-label">${option}</div>
+                <div class="poll-result-bar" style="width: ${percentage}%"></div>
+                <div class="poll-result-count">${votes.length} Stimme(n)</div>
+            `;
+            pollResultsContainer.appendChild(resultDiv);
+        }
+    }
+
+    voteBtn.addEventListener('click', () => {
+        const selectedOption = pollOptionsContainer.querySelector('input[name="poll-option"]:checked');
+        if (selectedOption && ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'vote', data: { option: selectedOption.value }}));
+        }
+    });
+
 
     // --- NOTEPAD LOGIC ---
     const notepadWindow = document.getElementById('window-notepad');

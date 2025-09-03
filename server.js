@@ -17,6 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 let drawingHistory = [];
 let participants = [];
 let sharedNotepadContent = '';
+let pollState = {}; // Zustand für die Umfrage
 const clients = new Map(); // Speichert verbundene Clients und ihre Metadaten
 
 // --- Hilfsfunktionen ---
@@ -36,6 +37,7 @@ function saveData() {
             drawingHistory,
             participants,
             sharedNotepadContent,
+            pollState, // Umfrage-Daten mitspeichern
         };
         fs.writeFileSync(DB_FILE, JSON.stringify(dataToSave, null, 2));
     } catch (error) {
@@ -51,7 +53,29 @@ function loadData() {
             drawingHistory = data.drawingHistory || [];
             participants = data.participants || [];
             sharedNotepadContent = data.sharedNotepadContent || '';
+            // Umfrage-Daten laden oder initialisieren
+            pollState = data.pollState || {
+                question: "Welcher Tag passt euch am besten für die BlazeOnline?",
+                options: {
+                    "18. Oktober": [],
+                    "25. Oktober": [],
+                    "1. November": [],
+                    "8. November": [],
+                    "15. November": [],
+
+                }
+            };
             console.log('Daten erfolgreich aus db.json geladen.');
+        } else {
+             // Initialisiere Umfrage-Daten, falls keine DB-Datei existiert
+            pollState = {
+                question: "Welches Wochenende passt euch am besten?",
+                options: {
+                    "Nächstes Wochenende": [],
+                    "In zwei Wochen": [],
+                    "In drei Wochen": []
+                }
+            };
         }
     } catch (error) {
         console.error('Fehler beim Laden der Daten:', error);
@@ -72,6 +96,7 @@ wss.on('connection', ws => {
     ws.send(JSON.stringify({ type: 'history', data: drawingHistory }));
     ws.send(JSON.stringify({ type: 'participantsUpdate', data: participants }));
     ws.send(JSON.stringify({ type: 'notepadUpdate', data: sharedNotepadContent }));
+    ws.send(JSON.stringify({ type: 'pollUpdate', data: pollState })); // Aktuellen Umfragestand senden
 
     // Allen anderen den neuen Client mitteilen
     broadcast(JSON.stringify({ type: 'userConnected', data: metadata }), ws);
@@ -81,6 +106,7 @@ wss.on('connection', ws => {
         const senderMeta = clients.get(ws);
 
         switch (msg.type) {
+            // ... (bisherige cases: draw, clear, getHistory, etc.)
             case 'draw':
                 drawingHistory.push(msg.data);
                 broadcast(JSON.stringify({ type: 'draw', data: msg.data }));
@@ -96,11 +122,13 @@ wss.on('connection', ws => {
                 break;
             case 'register':
                 const name = msg.data.name.trim();
-                if (name && !participants.includes(name)) {
-                    participants.push(name);
+                if (name && !participants.find(p => p.name === name)) {
+                    participants.push({ id: senderMeta.id, name });
+                    senderMeta.name = name;
                     broadcast(JSON.stringify({ type: 'participantsUpdate', data: participants }));
+                    broadcast(JSON.stringify({ type: 'nameUpdate', data: { id: senderMeta.id, name: name } }));
                     saveData();
-                } else if (participants.includes(name)) {
+                } else if (participants.find(p => p.name === name)) {
                     ws.send(JSON.stringify({ type: 'registrationError', message: 'Dieser Name ist bereits vergeben.' }));
                 }
                 break;
@@ -113,6 +141,29 @@ wss.on('connection', ws => {
                 senderMeta.x = msg.data.x;
                 senderMeta.y = msg.data.y;
                 broadcast(JSON.stringify({ type: 'mouseMove', data: { id: senderMeta.id, x: msg.data.x, y: msg.data.y } }), ws);
+                break;
+
+            // NEU: Case für die Abstimmung
+            case 'vote':
+                const option = msg.data.option;
+                const voterId = senderMeta.id;
+                
+                if (pollState.options[option]) {
+                    // Alte Stimme des Users entfernen (erlaubt Stimmänderung)
+                    Object.keys(pollState.options).forEach(key => {
+                        const index = pollState.options[key].indexOf(voterId);
+                        if (index > -1) {
+                            pollState.options[key].splice(index, 1);
+                        }
+                    });
+                    
+                    // Neue Stimme hinzufügen
+                    pollState.options[option].push(voterId);
+                    
+                    // Update an alle senden
+                    broadcast(JSON.stringify({ type: 'pollUpdate', data: pollState }));
+                    saveData();
+                }
                 break;
         }
     });
@@ -134,3 +185,4 @@ function broadcast(data, exclude) {
 
 const PORT = 8080;
 server.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
+

@@ -296,3 +296,37 @@ body {
     border: 1px solid var(--win-shadow);
 }
 
+/* --- Poll Styles --- */
+#poll-options label {
+    cursor: pointer;
+}
+
+.poll-result-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.poll-result-label {
+    flex-basis: 150px; /* Feste Breite für die Beschriftung */
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.poll-result-bar {
+    height: 20px;
+    background-color: var(--win-title-bar);
+    border: 1px solid var(--win-shadow);
+    border-right-color: var(--win-highlight);
+    border-bottom-color: var(--win-highlight);
+    transition: width 0.3s ease-in-out;
+}
+
+.poll-result-count {
+    font-size: 14px;
+    color: var(--win-shadow);
+}
+
