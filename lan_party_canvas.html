@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LAN-Party Desktop '95</title>
+    <title>BlazeLanOS</title>
     <!-- Google Fonts for a retro pixel look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -459,7 +459,7 @@
         let isDrawing = false, lastX = 0, lastY = 0, ws;
 
         function connectWebSocket() {
-            ws = new WebSocket(`ws://lan.tante.io`);
+            ws = new WebSocket(`wss://lan.tante.io`);
             ws.onopen = () => { statusIndicator.style.backgroundColor = 'lime'; connectionStatus.textContent = "Verbunden!"; };
             ws.onmessage = (event) => {
                 const msg = JSON.parse(event.data);
