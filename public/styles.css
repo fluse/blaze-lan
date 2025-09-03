@@ -1,0 +1,176 @@
+ :root {
+    --win-bg: #c0c0c0;
+    --win-text: #000000;
+    --win-highlight: #ffffff;
+    --win-shadow: #808080;
+    --win-title-bar: #000080;
+    --win-title-bar-inactive: #808080;
+    --win-title-text: #ffffff;
+}
+
+body {
+    font-family: 'VT323', monospace;
+    background-color: #008080; /* Classic Win95 teal background */
+    font-size: 18px;
+    color: var(--win-text);
+    overflow: hidden;
+    height: 100vh;
+    margin: 0;
+    user-select: none;
+}
+
+#desktop {
+    height: calc(100vh - 40px);
+    position: relative;
+}
+
+/* --- Window Styles --- */
+.win-window {
+    background-color: var(--win-bg);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+    box-shadow: 2px 2px 0px 0px #000;
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    min-width: 250px;
+    min-height: 200px;
+}
+
+.win-title-bar {
+    background-color: var(--win-title-bar-inactive);
+    color: var(--win-title-text);
+    padding: 3px 5px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    cursor: move;
+}
+
+.win-window.active .win-title-bar {
+    background-color: var(--win-title-bar);
+}
+
+.win-title-buttons { display: flex; }
+
+.win-title-button {
+    width: 22px;
+    height: 22px;
+    background-color: var(--win-bg);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+    box-shadow: 1px 1px 0px 0px #000;
+    margin-left: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: default;
+}
+.win-title-button:active {
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+}
+
+.win-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid;
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+    padding: 8px;
+    gap: 15px;
+    overflow: auto;
+}
+
+.win-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    background: repeating-linear-gradient(135deg, var(--win-shadow), var(--win-shadow) 1px, var(--win-bg) 1px, var(--win-bg) 4px);
+    cursor: se-resize;
+}
+
+/* --- Taskbar Styles --- */
+#taskbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: var(--win-bg);
+    border-top: 2px solid var(--win-highlight);
+    padding: 4px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    z-index: 20000;
+}
+
+.win-button {
+    background-color: var(--win-bg);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+    box-shadow: 1px 1px 0px 0px #000;
+    padding: 5px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.win-button:active, .win-button.active {
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+    background-color: #e0e0e0;
+}
+
+#taskbar-buttons { display: flex; gap: 4px; margin-left: 8px; }
+.task-button {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#clock {
+    margin-left: auto;
+    border: 2px inset var(--win-shadow);
+    padding: 2px 8px;
+}
+
+/* --- Start Menu Styles --- */
+#start-menu {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    width: 200px;
+    background: var(--win-bg);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+    box-shadow: 2px 2px 0px 0px #000;
+    padding: 3px;
+    z-index: 10000;
+}
+#start-menu ul { list-style: none; margin: 0; padding: 0; }
+#start-menu li a {
+    display: block;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: var(--win-text);
+}
+#start-menu li a:hover {
+    background: var(--win-title-bar);
+    color: var(--win-title-text);
+}
+
+/* --- Program Specific Styles --- */
+#drawingCanvas { background-color: white; display: block; width: 100%; height: 100%; }
+#brushCursor { position: absolute; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); border: 1px solid black; }
+#notepad-textarea { width: 100%; height: 100%; border: none; resize: none; font-family: 'VT323', monospace; font-size: 18px; }
+#calculator-display { width: 100%; background: white; border: 2px inset var(--win-shadow); padding: 5px; text-align: right; font-size: 24px; margin-bottom: 8px; }
+#calculator-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.calc-btn { padding: 10px; }
+#participant-list { list-style-type: none; padding: 0; margin: 0; background: white; border: 2px inset var(--win-shadow); flex-grow: 1; overflow-y: auto; padding: 5px; }

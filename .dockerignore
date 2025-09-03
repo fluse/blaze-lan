@@ -1,0 +1,18 @@
+# Docker-spezifische Dateien ignorieren
+Dockerfile
+docker-compose.yml
+
+# Git-Verzeichnis ignorieren
+.git
+.gitignore
+
+# Node.js-Abhängigkeiten ignorieren (werden im Container installiert)
+node_modules
+
+# Editor- und IDE-Konfigurationsdateien
+.vscode/
+.idea/
+
+# OS-spezifische Dateien
+.DS_Store
+Thumbs.db

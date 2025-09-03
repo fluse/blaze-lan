@@ -1,5 +1,5 @@
 {
-  "name": "lan-party-canvas-server",
+  "name": "BlazeLanOS",
   "version": "1.0.0",
   "description": "Backend server for the real-time collaborative canvas.",
   "main": "server.js",

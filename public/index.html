@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlazeLanOS</title>
+    <!-- Google Fonts for a retro pixel look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="desktop">
+        <!-- Paint Window -->
+        <div class="win-window active" id="window-paint" style="width: 500px; height: 400px; top: 20px; left: 280px; z-index: 2;">
+            <div class="win-title-bar">
+                <span>Paint.exe</span>
+                <div class="win-title-buttons">
+                    <div class="win-title-button win-close-btn">X</div>
+                </div>
+            </div>
+            <div class="win-content" style="padding: 0; position:relative;">
+                <canvas id="drawingCanvas"></canvas>
+                <div id="brushCursor"></div>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+
+        <!-- Controls Window -->
+        <div class="win-window" id="window-controls" style="width: 250px; height: 320px; top: 50px; left: 20px; z-index: 1;">
+            <div class="win-title-bar"><span>Steuerung.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-content">
+                <div>
+                    <label for="colorPicker">Farbe</label>
+                    <input type="color" id="colorPicker" value="#000000" style="width:100%; height:40px;">
+                </div>
+                <div>
+                    <label for="brushSize">Pinselgröße: <span id="brushSizeValue">10</span>px</label>
+                    <input type="range" id="brushSize" min="1" max="100" value="10">
+                </div>
+                <button id="clearCanvasBtn" class="win-button" style="width:100%;">Leinwand leeren</button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div id="statusIndicator" style="width: 16px; height: 16px; border: 2px inset var(--win-shadow); background-color: red;"></div>
+                    <p id="connectionStatus">Verbinde...</p>
+                </div>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+        
+        <!-- Registration Window (hidden by default) -->
+        <div class="win-window" id="window-registration" style="width: 350px; height: 450px; top: 80px; left: 80px; display: none;">
+            <div class="win-title-bar"><span>Anmeldung.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-content">
+                <p>Melde dich für die LAN-Party an!</p>
+                <div id="registration-form">
+                    <label for="nameInput">Dein Name:</label>
+                    <input type="text" id="nameInput" style="width: 100%; border: 2px inset var(--win-shadow); padding: 5px; font-family: 'VT323', monospace; font-size: 16px;">
+                    <button id="registerBtn" class="win-button" style="width: 100%; margin-top: 5px;">Anmelden</button>
+                </div>
+                <hr style="width: 100%; border: 1px inset var(--win-shadow);">
+                <p>Teilnehmer:</p>
+                <ul id="participant-list">
+                    <!-- Participants will be added here by JS -->
+                </ul>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+
+        <!-- Notepad Window (hidden by default) -->
+        <div class="win-window" id="window-notepad" style="width: 400px; height: 300px; top: 100px; left: 150px; display: none;">
+            <div class="win-title-bar"><span>Notepad.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-content" style="padding:0;">
+                <textarea id="notepad-textarea" placeholder="Hier tippen..."></textarea>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+
+        <!-- Calculator Window (hidden by default) -->
+        <div class="win-window" id="window-calculator" style="width: 280px; height: 380px; top: 120px; left: 400px; display: none;">
+            <div class="win-title-bar"><span>Rechner.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-content">
+                <div id="calculator-display">0</div>
+                <div id="calculator-buttons">
+                    <button class="win-button calc-btn">C</button><button class="win-button calc-btn">CE</button><button class="win-button calc-btn">&larr;</button><button class="win-button calc-btn">/</button>
+                    <button class="win-button calc-btn">7</button><button class="win-button calc-btn">8</button><button class="win-button calc-btn">9</button><button class="win-button calc-btn">*</button>
+                    <button class="win-button calc-btn">4</button><button class="win-button calc-btn">5</button><button class="win-button calc-btn">6</button><button class="win-button calc-btn">-</button>
+                    <button class="win-button calc-btn">1</button><button class="win-button calc-btn">2</button><button class="win-button calc-btn">3</button><button class="win-button calc-btn">+</button>
+                    <button class="win-button calc-btn">+/-</button><button class="win-button calc-btn">0</button><button class="win-button calc-btn">.</button><button class="win-button calc-btn">=</button>
+                </div>
+            </div>
+            <div class="win-resize-handle"></div>
+        </div>
+
+    </div>
+
+    <div id="start-menu" style="display: none;">
+        <ul>
+            <li><a href="#" class="start-menu-item" data-window-id="window-registration">Anmeldung</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-paint">Paint</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-controls">Steuerung</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-notepad">Notepad</a></li>
+            <li><a href="#" class="start-menu-item" data-window-id="window-calculator">Rechner</a></li>
+        </ul>
+    </div>
+
+    <footer id="taskbar">
+        <button id="startButton" class="win-button">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACDSURBVDhPY/j//z8DNsD4wscK4ILgB4gYgDgwGYn9gAYQG4D4fyA2AGI/kPh/ALsDMX4g1gY5A3F+INYG5QDEDyAOBiA+AE3gDyCWBFkTiAOBgNghqCWQGYj9gFgH5AxE/0BsB+QOxA8GUTgA8V8g9gdiAyD+D8QGQDQAUwEAy/t48dZx6LAAAAAASUVORK5CYII=" alt="" width="16" height="16">
+            <span>Start</span>
+        </button>
+        <div id="taskbar-buttons"></div>
+        <div id="clock">12:00</div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
+
