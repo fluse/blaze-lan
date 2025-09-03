@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 let drawingHistory = [];
 let participants = [];
 let sharedNotepadContent = '';
-let pollState = {}; // Zustand für die Umfrage
+let pollState = {};
 const clients = new Map(); // Speichert verbundene Clients und ihre Metadaten
 
 // --- Hilfsfunktionen ---
@@ -37,11 +37,22 @@ function saveData() {
             drawingHistory,
             participants,
             sharedNotepadContent,
-            pollState, // Umfrage-Daten mitspeichern
+            pollState,
         };
         fs.writeFileSync(DB_FILE, JSON.stringify(dataToSave, null, 2));
     } catch (error) {
         console.error('Fehler beim Speichern der Daten:', error);
+    }
+}
+
+const defaultPollData = {
+    question: "Welcher Tag passt euch am besten für die BlazeOnline?",
+    options: {
+        "25.Oktober": [],
+        "1. November": [],
+        "8. November": [],
+        "15. November": [],
+        "22. November": [],
     }
 }
 
@@ -54,28 +65,11 @@ function loadData() {
             participants = data.participants || [];
             sharedNotepadContent = data.sharedNotepadContent || '';
             // Umfrage-Daten laden oder initialisieren
-            pollState = data.pollState || {
-                question: "Welcher Tag passt euch am besten für die BlazeOnline?",
-                options: {
-                    "18. Oktober": [],
-                    "25. Oktober": [],
-                    "1. November": [],
-                    "8. November": [],
-                    "15. November": [],
-
-                }
-            };
+            pollState = data.pollState || defaultPollData;
             console.log('Daten erfolgreich aus db.json geladen.');
         } else {
              // Initialisiere Umfrage-Daten, falls keine DB-Datei existiert
-            pollState = {
-                question: "Welches Wochenende passt euch am besten?",
-                options: {
-                    "Nächstes Wochenende": [],
-                    "In zwei Wochen": [],
-                    "In drei Wochen": []
-                }
-            };
+            pollState = defaultPollData;
         }
     } catch (error) {
         console.error('Fehler beim Laden der Daten:', error);
@@ -90,9 +84,18 @@ wss.on('connection', ws => {
     const color = getRandomColor(); // Start with a random color as fallback
     const metadata = { id, color };
     clients.set(ws, metadata);
+    
+    // Erstelle eine vollständige Liste aller Clients inklusive ihrer Namen
+    const clientListForInit = Array.from(clients.values()).map(clientMeta => {
+        const participant = participants.find(p => p.id === clientMeta.id);
+        return {
+            ...clientMeta,
+            name: participant ? participant.name : undefined
+        };
+    });
 
     // Initialdaten an den neuen Client senden
-    ws.send(JSON.stringify({ type: 'init', data: { id, clients: Array.from(clients.values()) } }));
+    ws.send(JSON.stringify({ type: 'init', data: { id, clients: clientListForInit } }));
     ws.send(JSON.stringify({ type: 'history', data: drawingHistory }));
     ws.send(JSON.stringify({ type: 'participantsUpdate', data: participants }));
     ws.send(JSON.stringify({ type: 'notepadUpdate', data: sharedNotepadContent }));

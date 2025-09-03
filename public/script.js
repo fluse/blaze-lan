@@ -185,6 +185,19 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // Abmelde-Funktion hinzufügen
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Benutzerdaten aus dem localStorage entfernen
+                localStorage.removeItem('lanPartyUserName');
+                localStorage.removeItem('lanPartyUserColor');
+                // Seite neu laden, um zum Login-Bildschirm zurückzukehren
+                window.location.reload();
+            });
+        }
+
         document.querySelectorAll('.win-window').forEach(windowEl => {
             makeDraggable(windowEl);
             makeResizable(windowEl);
@@ -497,6 +510,105 @@ document.addEventListener('DOMContentLoaded', () => {
                 ws.send(JSON.stringify({ type: 'notepadUpdate', data: sharedNotepad.value }));
             }
         });
+
+        // --- MUSIC PLAYER LOGIC ---
+        const playPauseBtn = document.getElementById('music-play-pause-btn');
+        const nextBtn = document.getElementById('music-next-btn');
+        const prevBtn = document.getElementById('music-prev-btn');
+        const volumeSlider = document.getElementById('music-volume-slider');
+        const musicDisplay = document.querySelector('.music-display');
+        const playlistContainer = document.getElementById('music-playlist');
+
+        const playlist = [
+            { title: "SoundHelix Song 1", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { title: "SoundHelix Song 2", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+            { title: "SoundHelix Song 3", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+            { title: "SoundHelix Song 4", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
+            { title: "SoundHelix Song 5", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" }
+        ];
+
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        function loadTrack(trackIndex) {
+            audio.src = playlist[trackIndex].url;
+            musicDisplay.textContent = playlist[trackIndex].title;
+            updatePlaylistUI();
+        }
+
+        function playTrack() {
+            isPlaying = true;
+            audio.play();
+            playPauseBtn.innerHTML = '&#9208;'; // Pause Symbol
+        }
+
+        function pauseTrack() {
+            isPlaying = false;
+            audio.pause();
+            playPauseBtn.innerHTML = '&#9658;'; // Play Symbol
+        }
+
+        function playNext() {
+            currentTrackIndex++;
+            if (currentTrackIndex >= playlist.length) {
+                currentTrackIndex = 0;
+            }
+            loadTrack(currentTrackIndex);
+            playTrack();
+        }
+
+        function playPrev() {
+            currentTrackIndex--;
+            if (currentTrackIndex < 0) {
+                currentTrackIndex = playlist.length - 1;
+            }
+            loadTrack(currentTrackIndex);
+            playTrack();
+        }
+
+        function updatePlaylistUI() {
+            playlistContainer.innerHTML = '';
+            playlist.forEach((song, index) => {
+                const li = document.createElement('li');
+                li.textContent = song.title;
+                li.dataset.index = index;
+                if (index === currentTrackIndex) {
+                    li.classList.add('playing');
+                }
+                playlistContainer.appendChild(li);
+            });
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                pauseTrack();
+            } else {
+                playTrack();
+            }
+        });
+
+        nextBtn.addEventListener('click', playNext);
+        prevBtn.addEventListener('click', playPrev);
+
+        volumeSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value / 100;
+        });
+
+        audio.addEventListener('ended', playNext);
+
+        playlistContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'LI') {
+                currentTrackIndex = parseInt(e.target.dataset.index, 10);
+                loadTrack(currentTrackIndex);
+                playTrack();
+            }
+        });
+
+        // Initial setup
+        updatePlaylistUI();
+        loadTrack(currentTrackIndex);
+
 
         // --- CALCULATOR LOGIC ---
         const calcDisplay = document.getElementById('calculator-display');

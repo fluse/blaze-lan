@@ -407,3 +407,49 @@ body {
     color: var(--win-shadow);
 }
 
+/* --- Music Player Styles --- */
+.music-display {
+    text-align: center;
+    padding: 10px;
+    background: var(--win-highlight);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.music-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.music-volume {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#music-volume-slider {
+    flex-grow: 1;
+}
+
+#music-playlist li {
+    cursor: pointer;
+    padding: 4px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#music-playlist li:hover {
+    background: var(--win-title-bar);
+    color: var(--win-title-text);
+}
+
+#music-playlist li.playing {
+    background: var(--win-title-bar-inactive);
+    color: var(--win-title-text);
+    font-weight: bold;
+}
+
+    
