@@ -10,15 +10,12 @@ COPY package*.json ./
 # Install app dependencies
 RUN npm install
 
-# Copy the frontend files (the entire public directory)
-COPY public ./public/
-
-# Copy the backend file
-COPY server.js .
+# Copy the rest of the application files from the build context
+# This is more robust than copying individual files/folders.
+COPY . .
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8080
 
 # Define the command to run the app
 CMD [ "node", "server.js" ]
-
