@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlazeLanOS</title>
+    <title>BlazeOS</title>
     <!-- Google Fonts for a retro pixel look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,7 @@
                 <h2>Anmeldung</h2>
             </div>
             <div class="login-body">
-                <p>Gib deinen Namen ein, um BlazeLanOS zu starten.</p>
+                <p>Gib deinen Namen ein, um BlazeOS zu starten.</p>
                 <div class="login-input-group">
                     <label for="loginNameInput">Benutzername:</label>
                     <input type="text" id="loginNameInput" class="win-input" autofocus>
@@ -59,7 +59,7 @@
 
         <!-- Controls Window -->
         <div class="win-window" id="window-controls" style="width: 250px; height: 180px; top: 50px; left: 20px; z-index: 1;">
-            <div class="win-title-bar"><span>Steuerung.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-title-bar"><span>Einstellungen</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
             <div class="win-content">
                 <div style="margin-top: 10px;">
                     <input type="checkbox" id="toggleCursorsCheckbox" checked>
@@ -93,7 +93,7 @@
         </div>
 
         <!-- Poll Window (hidden by default) -->
-        <div class="win-window" id="window-poll" style="width: 400px; height: 420px; top: 150px; left: 200px; display: none;">
+        <div class="win-window" id="window-poll" style="width: 400px; height: 420px; top: 150px; left: 200px;">
             <div class="win-title-bar"><span>Umfrage.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
             <div class="win-content">
                 <p><strong>Terminfindung LAN-Party</strong></p>
@@ -152,9 +152,12 @@
             <li><a href="#" class="start-menu-item" data-window-id="window-registration">Anmeldung</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-poll">Umfrage</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-paint">Paint</a></li>
-            <li><a href="#" class="start-menu-item" data-window-id="window-controls">Steuerung</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-notepad">Notepad</a></li>
             <li><a href="#" class="start-menu-item" data-window-id="window-calculator">Rechner</a></li>
+            <hr style="width: 90%; border: 1px inset var(--win-shadow); margin: 3px auto;">
+            <li><a href="#" class="start-menu-item" data-window-id="window-controls">Einstellungen</a></li>
+            <hr style="width: 90%; border: 1px inset var(--win-shadow); margin: 3px auto;">
+            <li><a href="https://discord.gg/fAn7Q38B" target="_blank" class="start-menu-item">Discord</a></li>
         </ul>
     </div>
 
