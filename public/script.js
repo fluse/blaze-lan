@@ -42,6 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- CURSOR & WEBSOCKET STATE ---
         const userCursors = {};
         let myId = null;
+        // Read stored color or generate a random fallback
+        let myColor = localStorage.getItem('lanPartyUserColor') || '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
         let showCursors = true;
         let ws;
 
@@ -208,6 +210,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
 
         // --- CURSOR LOGIC ---
+        const cursorColorPicker = document.getElementById('cursorColorPicker');
+        if (cursorColorPicker) {
+            cursorColorPicker.value = myColor; // Set initial value of the color picker
+            cursorColorPicker.addEventListener('input', (e) => {
+                const newColor = e.target.value;
+                myColor = newColor; // Update local variable
+                localStorage.setItem('lanPartyUserColor', newColor); // Persist in localStorage
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    // Send color update to the server
+                    ws.send(JSON.stringify({ type: 'colorUpdate', data: { color: newColor } }));
+                }
+            });
+        }
+
         function createCursorElement(userData) {
             if (userCursors[userData.id]) return;
             const cursorEl = document.createElement('div');
@@ -271,8 +287,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ws.onopen = () => {
                 statusIndicator.style.backgroundColor = 'lime';
                 connectionStatus.textContent = "Verbunden!";
-                // Automatically register user on connection
+                // Automatically register user and send their color on connection
                 ws.send(JSON.stringify({ type: 'register', data: { name: userName } }));
+                ws.send(JSON.stringify({ type: 'colorUpdate', data: { color: myColor } }));
             };
             
             ws.onmessage = (event) => {
@@ -304,9 +321,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         break;
                     case 'nameUpdate':
-                        const cursorToUpdate = userCursors[msg.data.id];
-                        if(cursorToUpdate) {
-                            cursorToUpdate.querySelector('.cursor-name').textContent = msg.data.name;
+                        const cursorToUpdateName = userCursors[msg.data.id];
+                        if(cursorToUpdateName) {
+                            cursorToUpdateName.querySelector('.cursor-name').textContent = msg.data.name;
+                        }
+                        break;
+                    case 'colorUpdate':
+                        const cursorToUpdateColor = userCursors[msg.data.id];
+                        if (cursorToUpdateColor) {
+                            cursorToUpdateColor.style.setProperty('--cursor-color', msg.data.color);
                         }
                         break;
                     case 'history':
@@ -324,8 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         break;
                     case 'registrationError':
                         // If the name is already taken, we assume it's the same user reconnecting
-                        // after a disconnect. We log a warning but don't interrupt the user with
-                        // an alert or a reload.
+                        // after a disconnect. We log a warning but don't interrupt the user.
                         console.warn('Registrierungsfehler (wird als Wiederverbindung behandelt):', msg.message);
                         break;
                     case 'notepadUpdate':

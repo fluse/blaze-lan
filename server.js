@@ -87,12 +87,12 @@ loadData();
 
 wss.on('connection', ws => {
     const id = uuidv4();
-    const color = getRandomColor();
+    const color = getRandomColor(); // Start with a random color as fallback
     const metadata = { id, color };
     clients.set(ws, metadata);
 
     // Initialdaten an den neuen Client senden
-    ws.send(JSON.stringify({ type: 'init', data: { id, color, clients: Array.from(clients.values()) } }));
+    ws.send(JSON.stringify({ type: 'init', data: { id, clients: Array.from(clients.values()) } }));
     ws.send(JSON.stringify({ type: 'history', data: drawingHistory }));
     ws.send(JSON.stringify({ type: 'participantsUpdate', data: participants }));
     ws.send(JSON.stringify({ type: 'notepadUpdate', data: sharedNotepadContent }));
@@ -104,9 +104,9 @@ wss.on('connection', ws => {
     ws.on('message', message => {
         const msg = JSON.parse(message);
         const senderMeta = clients.get(ws);
+        if (!senderMeta) return; // Exit if client is not in map
 
         switch (msg.type) {
-            // ... (bisherige cases: draw, clear, getHistory, etc.)
             case 'draw':
                 drawingHistory.push(msg.data);
                 broadcast(JSON.stringify({ type: 'draw', data: msg.data }));
@@ -123,8 +123,8 @@ wss.on('connection', ws => {
             case 'register':
                 const name = msg.data.name.trim();
                 if (name && !participants.find(p => p.name === name)) {
+                    senderMeta.name = name; // Add name to metadata
                     participants.push({ id: senderMeta.id, name });
-                    senderMeta.name = name;
                     broadcast(JSON.stringify({ type: 'participantsUpdate', data: participants }));
                     broadcast(JSON.stringify({ type: 'nameUpdate', data: { id: senderMeta.id, name: name } }));
                     saveData();
@@ -142,36 +142,49 @@ wss.on('connection', ws => {
                 senderMeta.y = msg.data.y;
                 broadcast(JSON.stringify({ type: 'mouseMove', data: { id: senderMeta.id, x: msg.data.x, y: msg.data.y } }), ws);
                 break;
-
-            // NEU: Case für die Abstimmung
             case 'vote':
                 const option = msg.data.option;
                 const voterId = senderMeta.id;
                 
                 if (pollState.options[option]) {
-                    // Alte Stimme des Users entfernen (erlaubt Stimmänderung)
                     Object.keys(pollState.options).forEach(key => {
                         const index = pollState.options[key].indexOf(voterId);
                         if (index > -1) {
                             pollState.options[key].splice(index, 1);
                         }
                     });
-                    
-                    // Neue Stimme hinzufügen
                     pollState.options[option].push(voterId);
-                    
-                    // Update an alle senden
                     broadcast(JSON.stringify({ type: 'pollUpdate', data: pollState }));
                     saveData();
                 }
+                break;
+            
+            // NEU: Case für die Farbaktualisierung
+            case 'colorUpdate':
+                const newColor = msg.data.color;
+                senderMeta.color = newColor; // Update color in the server's in-memory state
+                // Broadcast the color change to all other clients so they can update the cursor
+                broadcast(JSON.stringify({ type: 'colorUpdate', data: { id: senderMeta.id, color: newColor } }));
                 break;
         }
     });
 
     ws.on('close', () => {
         const metadata = clients.get(ws);
-        broadcast(JSON.stringify({ type: 'userDisconnected', data: { id: metadata.id } }));
-        clients.delete(ws);
+        if (metadata) {
+            // Teilnehmer aus der Liste entfernen, falls er registriert war
+            const participantIndex = participants.findIndex(p => p.id === metadata.id);
+            if (participantIndex > -1) {
+                participants.splice(participantIndex, 1);
+                // Die aktualisierte Teilnehmerliste an alle senden
+                broadcast(JSON.stringify({ type: 'participantsUpdate', data: participants }));
+                saveData(); // Änderungen speichern
+            }
+
+            // Allen anderen mitteilen, dass der Benutzer die Verbindung getrennt hat
+            broadcast(JSON.stringify({ type: 'userDisconnected', data: { id: metadata.id } }));
+            clients.delete(ws);
+        }
     });
 });
 
