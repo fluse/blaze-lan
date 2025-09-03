@@ -10,11 +10,10 @@ COPY package*.json ./
 # Install app dependencies
 RUN npm install
 
-# Create a 'public' directory for the frontend file
-RUN mkdir public
+# Copy the frontend files (the entire public directory)
+COPY public ./public/
 
-# Copy the frontend and backend files into the container
-COPY lan_party_canvas.html ./public/
+# Copy the backend file
 COPY server.js .
 
 # Make port 8080 available to the world outside this container
@@ -22,3 +21,4 @@ EXPOSE 8080
 
 # Define the command to run the app
 CMD [ "node", "server.js" ]
+
