@@ -40,7 +40,7 @@ body {
     flex-direction: column;
     position: absolute;
     min-width: 250px;
-    min-height: 200px;
+    min-height: 180px;
 }
 
 .win-title-bar {
@@ -51,7 +51,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px;
     cursor: move;
 }
 
@@ -102,13 +101,32 @@ body {
 
 .win-menu-bar {
     background: var(--win-bg);
-    padding: 2px 4px;
+    padding: 4px 6px;
     border-bottom: 2px solid;
     border-color: var(--win-shadow) var(--win-highlight);
-    margin-bottom: 3px;
     display: flex;
     gap: 10px;
     align-items: center;
+    height: 40px;
+}
+
+.win-menu-bar .separator {
+    width: 2px;
+    height: 25px;
+    background-color: var(--win-shadow);
+    border-right: 2px solid var(--win-highlight);
+}
+
+.win-menu-bar input[type="color"] {
+    width: 35px;
+    height: 28px;
+    padding: 0;
+    border: 2px inset var(--win-shadow);
+    cursor: pointer;
+}
+
+.win-menu-bar input[type="range"] {
+    width: 120px;
 }
 
 /* --- Taskbar Styles --- */
@@ -124,7 +142,6 @@ body {
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    z-index: 20000;
 }
 
 .win-button {
@@ -142,6 +159,20 @@ body {
     border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
     background-color: #e0e0e0;
 }
+
+.win-button-small {
+    background-color: var(--win-bg);
+    border: 2px solid;
+    border-color: var(--win-highlight) var(--win-shadow) var(--win-shadow) var(--win-highlight);
+    box-shadow: 1px 1px 0px 0px #000;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.win-button-small:active {
+    border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+}
+
 
 #taskbar-buttons { display: flex; gap: 4px; margin-left: 8px; }
 .task-button {
@@ -227,5 +258,41 @@ body {
 }
 .win-list li {
     padding: 2px 5px;
+}
+
+/* --- Cursor Styles --- */
+#cursor-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none; /* Lässt Klicks zu den darunterliegenden Elementen durch */
+    z-index: 15000;
+}
+
+.user-cursor {
+    position: absolute;
+    display: flex;
+    align-items: flex-start;
+}
+
+.cursor-icon {
+    width: 20px;
+    height: 20px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 100 100"><polygon points="0,0 0,75 25,50 50,100 70,90 45,45 90,45 90,25 40,25 75,0" style="fill:white;stroke:black;stroke-width:5;"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.cursor-name {
+    background-color: var(--cursor-color, black);
+    color: var(--win-highlight);
+    padding: 2px 6px;
+    font-size: 14px;
+    margin-left: 2px;
+    white-space: nowrap;
+    border: 1px solid var(--win-shadow);
 }
 

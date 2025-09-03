@@ -1,6 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- CURSOR & WEBSOCKET STATE ---
+    const userCursors = {};
+    let myId = null;
+    let showCursors = true;
+    let ws;
+
     // --- DESKTOP & WINDOW MANAGEMENT ---
     const desktop = document.getElementById('desktop');
+    const cursorContainer = document.getElementById('cursor-container');
     let activeWindow = document.querySelector('.win-window.active');
     let zIndexCounter = 2;
 
@@ -153,7 +160,54 @@ document.addEventListener('DOMContentLoaded', () => {
         clock.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
     }, 1000);
 
-    // --- CANVAS LOGIC (Adapted) ---
+    // --- CURSOR LOGIC ---
+    function createCursorElement(userData) {
+        if (userCursors[userData.id]) return;
+
+        const cursorEl = document.createElement('div');
+        cursorEl.className = 'user-cursor';
+        cursorEl.style.setProperty('--cursor-color', userData.color);
+
+        const cursorIcon = document.createElement('div');
+        cursorIcon.className = 'cursor-icon';
+        cursorEl.appendChild(cursorIcon);
+
+        const cursorName = document.createElement('div');
+        cursorName.className = 'cursor-name';
+        cursorName.textContent = userData.name || userData.id.substring(0, 6);
+        cursorEl.appendChild(cursorName);
+
+        cursorContainer.appendChild(cursorEl);
+        userCursors[userData.id] = cursorEl;
+    }
+
+    function removeCursor(userId) {
+        const cursor = userCursors[userId];
+        if (cursor) {
+            cursor.remove();
+            delete userCursors[userId];
+        }
+    }
+
+    let lastMove = 0;
+    document.addEventListener('mousemove', (e) => {
+        if (Date.now() - lastMove > 50) { // Throttle to 20 updates per second
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'mouseMove', data: { x: e.clientX, y: e.clientY } }));
+            }
+            lastMove = Date.now();
+        }
+    });
+
+    const toggleCursorsCheckbox = document.getElementById('toggleCursorsCheckbox');
+    if(toggleCursorsCheckbox) {
+        toggleCursorsCheckbox.addEventListener('change', (e) => {
+            showCursors = e.target.checked;
+            cursorContainer.style.display = showCursors ? 'block' : 'none';
+        });
+    }
+
+    // --- CANVAS LOGIC ---
     const canvas = document.getElementById('drawingCanvas');
     const ctx = canvas.getContext('2d');
     const colorPicker = document.getElementById('colorPicker');
@@ -163,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const brushCursor = document.getElementById('brushCursor');
     const statusIndicator = document.getElementById('statusIndicator');
     const connectionStatus = document.getElementById('connectionStatus');
-    let isDrawing = false, lastX = 0, lastY = 0, ws;
+    let isDrawing = false, lastX = 0, lastY = 0;
 
     function connectWebSocket() {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -173,21 +227,68 @@ document.addEventListener('DOMContentLoaded', () => {
         
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
-            if (msg.type === 'history') { ctx.clearRect(0, 0, canvas.width, canvas.height); msg.data.forEach(drawSegment); }
-            else if (msg.type === 'draw') { drawSegment(msg.data); }
-            else if (msg.type === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-            else if (msg.type === 'participantsUpdate') { updateParticipantList(msg.data); }
-            else if (msg.type === 'registrationError') { alert('Fehler: ' + msg.message); }
-            else if (msg.type === 'notepadUpdate') {
-                const sharedNotepad = document.getElementById('notepad-textarea-shared');
-                // Nur aktualisieren, wenn der User nicht gerade selbst tippt, um Cursor-Sprünge zu vermeiden
-                if (sharedNotepad && document.activeElement !== sharedNotepad) {
-                    sharedNotepad.value = msg.data;
-                }
+            switch(msg.type) {
+                case 'init':
+                    myId = msg.data.id;
+                    Object.values(userCursors).forEach(c => c.remove());
+                    for(const id in userCursors) delete userCursors[id];
+                    msg.data.clients.forEach(client => {
+                        if (client.id !== myId) createCursorElement(client);
+                    });
+                    break;
+                case 'userConnected':
+                    if (msg.data.id !== myId) createCursorElement(msg.data);
+                    break;
+                case 'userDisconnected':
+                    removeCursor(msg.data.id);
+                    break;
+                case 'mouseMove':
+                    if (msg.data.id !== myId) {
+                        const cursor = userCursors[msg.data.id];
+                        if (cursor) {
+                            cursor.style.left = `${msg.data.x}px`;
+                            cursor.style.top = `${msg.data.y}px`;
+                        }
+                    }
+                    break;
+                case 'nameUpdate':
+                    const cursorToUpdate = userCursors[msg.data.id];
+                    if(cursorToUpdate) {
+                         cursorToUpdate.querySelector('.cursor-name').textContent = msg.data.name;
+                    }
+                    break;
+                case 'history':
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    msg.data.forEach(drawSegment);
+                    break;
+                case 'draw':
+                    drawSegment(msg.data);
+                    break;
+                case 'clear':
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    break;
+                case 'participantsUpdate':
+                    updateParticipantList(msg.data);
+                    break;
+                case 'registrationError':
+                    alert('Fehler: ' + msg.message);
+                    break;
+                case 'notepadUpdate':
+                    const sharedNotepad = document.getElementById('notepad-textarea-shared');
+                    if (sharedNotepad && document.activeElement !== sharedNotepad) {
+                        sharedNotepad.value = msg.data;
+                    }
+                    break;
             }
         };
         
-        ws.onclose = () => { statusIndicator.style.backgroundColor = 'red'; connectionStatus.textContent = "Getrennt..."; setTimeout(connectWebSocket, 3000); };
+        ws.onclose = () => {
+            statusIndicator.style.backgroundColor = 'red';
+            connectionStatus.textContent = "Getrennt...";
+            Object.values(userCursors).forEach(c => c.remove());
+            for(const id in userCursors) delete userCursors[id];
+            setTimeout(connectWebSocket, 3000);
+        };
         
         ws.onerror = () => { ws.close(); };
     }
@@ -238,16 +339,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = nameInput.value.trim();
         if (name && ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: 'register', data: { name: name } }));
-            nameInput.value = '';
+            // Der Name wird nicht mehr lokal gelöscht, um eine erneute Anmeldung zu ermöglichen
         }
     });
 
     function updateParticipantList(participants) {
         participantList.innerHTML = '';
-        participants.forEach(name => {
+        participants.forEach(p => {
             const li = document.createElement('li');
-            li.textContent = name;
-            li.style.padding = '2px 5px';
+            li.textContent = p.name;
             participantList.appendChild(li);
         });
     }
@@ -257,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const localNotepad = document.getElementById('notepad-textarea-local');
     const sharedNotepad = document.getElementById('notepad-textarea-shared');
     
-    // Event listener for radio buttons to switch modes
     notepadWindow.querySelectorAll('input[name="notepad-mode"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'local') {
@@ -270,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Event listener for typing in the shared notepad
     sharedNotepad.addEventListener('input', () => {
         if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: 'notepadUpdate', data: sharedNotepad.value }));

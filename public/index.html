@@ -12,15 +12,26 @@
 </head>
 <body>
     <div id="desktop">
+        <div id="cursor-container"></div> <!-- Container für die Live-Cursor -->
+
         <!-- Paint Window -->
-        <div class="win-window active" id="window-paint" style="width: 800px; height: 600px; top: 20px; left: 580px; z-index: 2;">
+        <div class="win-window active" id="window-paint" style="width: 800px; height: 600px; top: 20px; left: 300px; z-index: 2;">
             <div class="win-title-bar">
                 <span>Paint.exe</span>
                 <div class="win-title-buttons">
                     <div class="win-title-button win-close-btn">X</div>
                 </div>
             </div>
-            <div class="win-content" style="padding: 0; position:relative;">
+            <div class="win-menu-bar">
+                <label for="colorPicker">Farbe:</label>
+                <input type="color" id="colorPicker" value="#000000" title="Farbe wählen">
+                <div class="separator"></div>
+                <label for="brushSize">Größe (<span id="brushSizeValue">10</span>):</label>
+                <input type="range" id="brushSize" min="1" max="100" value="10" title="Pinselgröße">
+                <div class="separator"></div>
+                <button id="clearCanvasBtn" class="win-button-small" title="Leinwand leeren">Alles löschen</button>
+            </div>
+            <div class="win-content" style="padding: 0; position:relative; border-top: none;">
                 <canvas id="drawingCanvas"></canvas>
                 <div id="brushCursor"></div>
             </div>
@@ -28,19 +39,14 @@
         </div>
 
         <!-- Controls Window -->
-        <div class="win-window" id="window-controls" style="width: 250px; height: 320px; top: 50px; left: 20px; z-index: 1;">
+        <div class="win-window" id="window-controls" style="width: 250px; height: 180px; top: 50px; left: 20px; z-index: 1;">
             <div class="win-title-bar"><span>Steuerung.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
             <div class="win-content">
-                <div>
-                    <label for="colorPicker">Farbe</label>
-                    <input type="color" id="colorPicker" value="#000000" style="width:100%; height:40px;">
+                <div style="margin-top: 10px;">
+                    <input type="checkbox" id="toggleCursorsCheckbox" checked>
+                    <label for="toggleCursorsCheckbox">Live-Cursor anzeigen</label>
                 </div>
-                <div>
-                    <label for="brushSize">Pinselgröße: <span id="brushSizeValue">10</span>px</label>
-                    <input type="range" id="brushSize" min="1" max="100" value="10">
-                </div>
-                <button id="clearCanvasBtn" class="win-button" style="width:100%;">Leinwand leeren</button>
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: auto;">
                     <div id="statusIndicator" style="width: 16px; height: 16px; border: 2px inset var(--win-shadow); background-color: red;"></div>
                     <p id="connectionStatus">Verbinde...</p>
                 </div>
@@ -53,14 +59,14 @@
             <div class="win-title-bar"><span>Anmeldung.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
             <div class="win-content">
                 <p>Melde dich für die LAN-Party an!</p>
-                <div id="registration-form">
+                <div id="registration-form" style="display: flex; flex-direction: column; gap: 5px;">
                     <label for="nameInput">Dein Name:</label>
-                    <input type="text" id="nameInput" style="width: 100%; border: 2px inset var(--win-shadow); padding: 5px; font-family: 'VT323', monospace; font-size: 16px;">
-                    <button id="registerBtn" class="win-button" style="width: 100%; margin-top: 5px;">Anmelden</button>
+                    <input type="text" id="nameInput" class="win-input">
+                    <button id="registerBtn" class="win-button" style="margin-top: 5px;">Anmelden</button>
                 </div>
-                <hr style="width: 100%; border: 1px inset var(--win-shadow);">
+                <hr style="width: 100%; border: 1px inset var(--win-shadow); margin: 10px 0;">
                 <p>Teilnehmer:</p>
-                <ul id="participant-list">
+                <ul id="participant-list" class="win-list">
                     <!-- Participants will be added here by JS -->
                 </ul>
             </div>
@@ -120,4 +126,3 @@
     <script src="scripts.js"></script>
 </body>
 </html>
-
