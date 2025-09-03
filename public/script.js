@@ -5,18 +5,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const desktop = document.getElementById('desktop');
     const taskbar = document.getElementById('taskbar');
 
-    // Focus input on load and add Enter key functionality
-    loginNameInput.focus();
-    loginNameInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    });
-    loginBtn.addEventListener('click', handleLogin);
+    // Check for a stored name first
+    const storedName = localStorage.getItem('lanPartyUserName');
+    if (storedName) {
+        loginScreen.style.display = 'none';
+        desktop.style.display = 'block';
+        taskbar.style.display = 'flex';
+        initializeApp(storedName);
+    } else {
+        // If no name is stored, show the login screen
+        loginScreen.style.display = 'flex';
+        loginNameInput.focus();
+        loginNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+        loginBtn.addEventListener('click', handleLogin);
+    }
 
     function handleLogin() {
         const name = loginNameInput.value.trim();
         if (name) {
+            localStorage.setItem('lanPartyUserName', name); // Save name to localStorage
             loginScreen.style.display = 'none';
             desktop.style.display = 'block';
             taskbar.style.display = 'flex';
@@ -119,10 +130,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const startButton = document.getElementById('startButton');
         const startMenu = document.getElementById('start-menu');
         const taskbarButtons = document.getElementById('taskbar-buttons');
+        const taskbarUsername = document.getElementById('taskbar-username');
+        if (taskbarUsername) {
+            taskbarUsername.textContent = userName;
+        }
 
         function toggleProgram(windowId) {
             const windowEl = document.getElementById(windowId);
-            const taskButton = document.querySelector(`.task-button[data-window-id="${windowId}"]`);
+            const taskButton = document.querySelector(`.task-button[data-window-id="${windowEl.id}"]`);
             if (windowEl.style.display === 'none') {
                 windowEl.style.display = 'flex';
                 focusWindow(windowEl);
@@ -419,25 +434,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 pollResultsContainer.appendChild(resultDiv);
             }
-            if (localStorage.getItem('lanPartyPollVoted')) {
-                voteBtn.disabled = true;
-                voteBtn.textContent = 'Abgestimmt';
-                pollOptionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
-                    radio.disabled = true;
-                });
-            }
+            // Removed localStorage check to always allow voting
+            voteBtn.disabled = false;
+            voteBtn.textContent = 'Abstimmen';
+            pollOptionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.disabled = false;
+            });
         }
 
         voteBtn.addEventListener('click', () => {
             const selectedOption = pollOptionsContainer.querySelector('input[name="poll-option"]:checked');
             if (selectedOption && ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: 'vote', data: { option: selectedOption.value }}));
-                localStorage.setItem('lanPartyPollVoted', 'true');
-                voteBtn.disabled = true;
-                voteBtn.textContent = 'Abgestimmt';
-                pollOptionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
-                    radio.disabled = true;
-                });
+                // Removed localStorage and UI disabling logic
             }
         });
 

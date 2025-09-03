@@ -243,8 +243,17 @@ body {
     text-overflow: ellipsis;
 }
 
-#clock {
+#taskbar-username {
     margin-left: auto;
+    border: 2px inset var(--win-shadow);
+    padding: 2px 8px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+#clock {
+    margin-left: 4px;
     border: 2px inset var(--win-shadow);
     padding: 2px 8px;
     height: 100%;
