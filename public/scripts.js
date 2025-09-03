@@ -178,6 +178,13 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (msg.type === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
             else if (msg.type === 'participantsUpdate') { updateParticipantList(msg.data); }
             else if (msg.type === 'registrationError') { alert('Fehler: ' + msg.message); }
+            else if (msg.type === 'notepadUpdate') {
+                const sharedNotepad = document.getElementById('notepad-textarea-shared');
+                // Nur aktualisieren, wenn der User nicht gerade selbst tippt, um Cursor-Sprünge zu vermeiden
+                if (sharedNotepad && document.activeElement !== sharedNotepad) {
+                    sharedNotepad.value = msg.data;
+                }
+            }
         };
         
         ws.onclose = () => { statusIndicator.style.backgroundColor = 'red'; connectionStatus.textContent = "Getrennt..."; setTimeout(connectWebSocket, 3000); };
@@ -245,6 +252,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- NOTEPAD LOGIC ---
+    const notepadWindow = document.getElementById('window-notepad');
+    const localNotepad = document.getElementById('notepad-textarea-local');
+    const sharedNotepad = document.getElementById('notepad-textarea-shared');
+    
+    // Event listener for radio buttons to switch modes
+    notepadWindow.querySelectorAll('input[name="notepad-mode"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'local') {
+                localNotepad.style.display = 'block';
+                sharedNotepad.style.display = 'none';
+            } else {
+                localNotepad.style.display = 'none';
+                sharedNotepad.style.display = 'block';
+            }
+        });
+    });
+
+    // Event listener for typing in the shared notepad
+    sharedNotepad.addEventListener('input', () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'notepadUpdate', data: sharedNotepad.value }));
+        }
+    });
+
     // --- CALCULATOR LOGIC ---
     const calcDisplay = document.getElementById('calculator-display');
     let currentInput = '0'; let operator = null; let previousInput = null;
@@ -277,3 +309,4 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeCanvas();
     connectWebSocket();
 });
+

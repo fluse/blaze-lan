@@ -13,7 +13,7 @@
 <body>
     <div id="desktop">
         <!-- Paint Window -->
-        <div class="win-window active" id="window-paint" style="width: 500px; height: 400px; top: 20px; left: 280px; z-index: 2;">
+        <div class="win-window active" id="window-paint" style="width: 800px; height: 600px; top: 20px; left: 580px; z-index: 2;">
             <div class="win-title-bar">
                 <span>Paint.exe</span>
                 <div class="win-title-buttons">
@@ -70,8 +70,13 @@
         <!-- Notepad Window (hidden by default) -->
         <div class="win-window" id="window-notepad" style="width: 400px; height: 300px; top: 100px; left: 150px; display: none;">
             <div class="win-title-bar"><span>Notepad.exe</span><div class="win-title-buttons"><div class="win-title-button win-close-btn">X</div></div></div>
+            <div class="win-menu-bar">
+                <input type="radio" name="notepad-mode" id="notepad-local" value="local" checked> <label for="notepad-local">Lokal</label>
+                <input type="radio" name="notepad-mode" id="notepad-shared" value="shared"> <label for="notepad-shared">Shared</label>
+            </div>
             <div class="win-content" style="padding:0;">
-                <textarea id="notepad-textarea" placeholder="Hier tippen..."></textarea>
+                <textarea id="notepad-textarea-local" class="notepad-textarea" placeholder="Lokale Notizen..."></textarea>
+                <textarea id="notepad-textarea-shared" class="notepad-textarea" placeholder="Geteilte Notizen..." style="display:none;"></textarea>
             </div>
             <div class="win-resize-handle"></div>
         </div>
